@@ -1,0 +1,131 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+#define SIZE 5 // Fixed-size array for parking slots
+
+// Base class: Vehicle
+class Vehicle {
+public:
+    string registrationNumber;
+    string ownerName;
+
+    Vehicle(string regNum, string owner) : registrationNumber(regNum), ownerName(owner) {}
+    virtual void displayDetails() {
+        cout << "Registration Number: " << registrationNumber << endl << "Owner: " << ownerName << endl;
+    }
+    virtual ~Vehicle() {}
+};
+
+// Derived classes
+class Car : public Vehicle {
+public:
+    Car(string regNum, string owner) : Vehicle(regNum, owner) {}
+    void displayDetails() override {
+        cout << "[ CAR ] ";
+        Vehicle::displayDetails();
+        cout << endl;
+    }
+};
+
+class Bike : public Vehicle {
+public:
+    Bike(string regNum, string owner) : Vehicle(regNum, owner) {}
+    void displayDetails() override {
+        cout << "[ BIKE ] ";
+        Vehicle::displayDetails();
+        cout << endl;
+    }
+};
+
+// ParkingSlot class
+class ParkingSlot {
+    int slotNumber;
+    bool isOccupied;
+    Vehicle* vehicle;
+public:
+    ParkingSlot() : slotNumber(0), isOccupied(false), vehicle(NULL) {}
+    void setSlotNumber(int num) { slotNumber = num; }
+    void assignSlot(Vehicle* v) {
+        if (!isOccupied) {
+            vehicle = v;
+            isOccupied = true;
+            cout << "Vehicle parked in slot " << slotNumber << endl;
+            cout << endl;
+        } else {
+            cout << "Slot already occupied!" << endl;
+        }
+    }
+    void freeSlot() {
+        if (isOccupied) {
+            delete vehicle;
+            vehicle = NULL;
+            isOccupied = false;
+            cout << "Slot " << slotNumber << " is now free." << endl;
+        }
+    }
+    void displaySlot() {
+        if (isOccupied) {
+            vehicle->displayDetails();
+        } else {
+            cout << "Slot " << slotNumber << " is empty." << endl;
+            cout << endl;
+        }
+    }
+    friend class ParkingLot; // Friend function access
+};
+
+// ParkingLot class
+class ParkingLot {
+    ParkingSlot slots[SIZE];
+public:
+    ParkingLot() {
+        for (int i = 0; i < SIZE; ++i) {
+            slots[i].setSlotNumber(i + 1);
+        }
+    }
+    void parkVehicle(int slotNum, Vehicle* v) {
+        if (slotNum > 0 && slotNum <= SIZE) {
+            slots[slotNum - 1].assignSlot(v);
+        } else {
+            cout << "Invalid slot number!" << endl;
+        }
+    }
+    void removeVehicle(int slotNum) {
+        if (slotNum > 0 && slotNum <= SIZE) {
+            slots[slotNum - 1].freeSlot();
+        } else {
+            cout << "Invalid slot number!" << endl;
+        }
+    }
+    void displayStatus() {
+        for (int i = 0; i < SIZE; ++i) {
+            slots[i].displaySlot();
+        }
+    }
+    void saveToFile() {
+        ofstream file("parking_data.txt");
+        for (int i = 0; i < SIZE; ++i) {
+            if (slots[i].isOccupied) {
+                file << slots[i].slotNumber << " " << slots[i].vehicle->registrationNumber << " " << slots[i].vehicle->ownerName << endl;
+            }
+        }
+        file.close();
+    }
+};
+
+int main() {
+    ParkingLot lot;
+    Vehicle* car1 = new Car("ABC123", "John Doe");
+    Vehicle* bike1 = new Bike("XYZ789", "Jane Smith");
+    
+    lot.parkVehicle(1, car1);
+    lot.parkVehicle(2, bike1);
+    lot.displayStatus();
+    
+    lot.removeVehicle(1);
+    lot.displayStatus();
+    
+    lot.saveToFile();
+    return 0;
+}
