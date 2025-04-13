@@ -40,8 +40,9 @@ public:
 
 // ParkingSlot class
 class ParkingSlot {
+private:
     int slotNumber;
-    bool isOccupied;
+    bool isOccupied;  // true = ada , false = takde
     Vehicle* vehicle;
 public:
     ParkingSlot() : slotNumber(0), isOccupied(false), vehicle(NULL) {}
@@ -56,7 +57,7 @@ public:
             cout << "Slot already occupied!" << endl;
         }
     }
-    void freeSlot() {
+    void freeSlot() { // delete vehicle 
         if (isOccupied) {
             delete vehicle;
             vehicle = NULL;
@@ -98,6 +99,17 @@ public:
             cout << "Invalid slot number!" << endl;
         }
     }
+    
+	int availableSlots() {
+    int count = 0;
+    for (int i = 0; i < SIZE; ++i) {
+        if (!slots[i].isOccupied) {
+            count++;
+        }
+    }
+    return count;
+}
+
     void displayStatus() {
         for (int i = 0; i < SIZE; ++i) {
             slots[i].displaySlot();
@@ -116,16 +128,67 @@ public:
 
 int main() {
     ParkingLot lot;
-    Vehicle* car1 = new Car("ABC123", "John Doe");
-    Vehicle* bike1 = new Bike("XYZ789", "Jane Smith");
-    
-    lot.parkVehicle(1, car1);
-    lot.parkVehicle(2, bike1);
-    lot.displayStatus();
-    
-    lot.removeVehicle(1);
-    lot.displayStatus();
-    
-    lot.saveToFile();
+    int choice, slotNum;
+    string regNum, owner, type;
+
+    do {
+        cout << "\n--- Parking System Menu ---\n";
+        cout << "1. Park Vehicle\n";
+        cout << "2. Remove Vehicle\n";
+        cout << "3. Display Parking Lot Status\n";
+        cout << "4. Save Data to File\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter vehicle type (car/bike): ";
+                cin >> type;
+                cout << "Enter Registration Number: ";
+                cin >> regNum;
+                cout << "Enter Owner Name: ";
+                cin >> owner;
+                cout << "Enter Slot Number (1 to " << SIZE << "): ";
+                cin >> slotNum;
+
+                if (type == "car" || type == "Car") {
+                    lot.parkVehicle(slotNum, new Car(regNum, owner));
+                } else if (type == "bike" || type == "Bike") {
+                    lot.parkVehicle(slotNum, new Bike(regNum, owner));
+                } else {
+                    cout << "Invalid vehicle type!" << endl;
+                }
+                cout << "Available parking slots: " << lot.availableSlots() << "/" << SIZE << endl;
+                lot.displayStatus();
+				break;
+
+            case 2:
+                cout << "Enter Slot Number to free: ";
+                cin >> slotNum;
+                lot.removeVehicle(slotNum);
+                break;
+
+            case 3:
+            	 lot.displayStatus();
+            	cout << "Available parking slots: " << lot.availableSlots() << "/" << SIZE << endl;
+                break;
+
+            case 4:
+                lot.saveToFile();
+                cout << "Parking data saved to file.\n";
+                break;
+
+            case 5:
+                cout << "Exiting the system.\n";
+                break;
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+
+    } while (choice != 5);
+
     return 0;
 }
+
